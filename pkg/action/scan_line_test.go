@@ -140,7 +140,7 @@ func TestScanBinaryWithLineInfo(t *testing.T) {
 		0x00, 0x00, 0x00, 0x00, // padding
 	}
 
-	if err := os.WriteFile(binaryFile, binaryContent, 0644); err != nil {
+	if err := os.WriteFile(binaryFile, binaryContent, 0o644); err != nil {
 		t.Fatalf("Failed to write binary file: %v", err)
 	}
 
@@ -171,7 +171,7 @@ func TestScanBinaryWithLineInfo(t *testing.T) {
 
 	// Verify scan completed without errors
 	found := false
-	frs.Files.Range(func(_, value any) bool {
+	frs.Files.Range(func(_, _ any) bool {
 		found = true
 		return false
 	})
