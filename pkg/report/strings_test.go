@@ -120,32 +120,32 @@ func (p MockPattern) Matches() []yarax.Match {
 
 func TestMatchProcessorWithLineInfo(t *testing.T) {
 	content := []byte("first line\nsecond line\nthird line")
-	
+
 	matches := []yarax.Match{
-		MockMatch{offset: 0, length: 5},    // "first" at line 1
-		MockMatch{offset: 11, length: 6},   // "second" at line 2
-		MockMatch{offset: 23, length: 5},   // "third" at line 3
+		MockMatch{offset: 0, length: 5},  // "first" at line 1
+		MockMatch{offset: 11, length: 6}, // "second" at line 2
+		MockMatch{offset: 23, length: 5}, // "third" at line 3
 	}
-	
+
 	patterns := []yarax.Pattern{
 		MockPattern{identifier: "test_pattern", matches: matches},
 	}
-	
+
 	// Test with line info enabled
 	processor := newMatchProcessor(content, matches, patterns, true)
 	result := processor.process()
-	
+
 	if len(result.Strings) != 3 {
 		t.Errorf("Expected 3 strings, got %d", len(result.Strings))
 	}
-	
+
 	if len(result.LineNumbers) != 3 {
 		t.Errorf("Expected 3 line numbers, got %d", len(result.LineNumbers))
 	}
-	
+
 	expectedStrings := []string{"first", "second", "third"}
 	expectedLineNumbers := []int{1, 2, 3}
-	
+
 	for i := range result.Strings {
 		if result.Strings[i] != expectedStrings[i] {
 			t.Errorf("String[%d] = %q, want %q", i, result.Strings[i], expectedStrings[i])
@@ -154,11 +154,11 @@ func TestMatchProcessorWithLineInfo(t *testing.T) {
 			t.Errorf("LineNumber[%d] = %d, want %d", i, result.LineNumbers[i], expectedLineNumbers[i])
 		}
 	}
-	
+
 	// Test with line info disabled
 	processor = newMatchProcessor(content, matches, patterns, false)
 	result = processor.process()
-	
+
 	if len(result.LineNumbers) != 0 {
 		t.Errorf("Expected no line numbers when lineInfo=false, got %d", len(result.LineNumbers))
 	}
@@ -166,42 +166,42 @@ func TestMatchProcessorWithLineInfo(t *testing.T) {
 
 func TestMatchProcessorWithUnprintableChars(t *testing.T) {
 	content := []byte("hello\x00world\nsecond line")
-	
+
 	matches := []yarax.Match{
-		MockMatch{offset: 0, length: 11},   // "hello\x00world" - contains unprintable
-		MockMatch{offset: 12, length: 6},   // "second" - printable
+		MockMatch{offset: 0, length: 11}, // "hello\x00world" - contains unprintable
+		MockMatch{offset: 12, length: 6}, // "second" - printable
 	}
-	
+
 	patterns := []yarax.Pattern{
 		MockPattern{identifier: "test_pattern", matches: matches},
 	}
-	
+
 	processor := newMatchProcessor(content, matches, patterns, true)
 	result := processor.process()
-	
+
 	// First match should return pattern identifier instead of the string
 	if len(result.Strings) < 2 {
 		t.Fatalf("Expected at least 2 strings, got %d", len(result.Strings))
 	}
-	
+
 	// When unprintable chars are found, pattern identifier is returned
 	if result.Strings[0] != "test_pattern" {
 		t.Errorf("Expected pattern identifier for unprintable match, got %q", result.Strings[0])
 	}
-	
+
 	if result.Strings[1] != "second" {
 		t.Errorf("Expected 'second', got %q", result.Strings[1])
 	}
-	
+
 	// Line numbers should still be calculated correctly
 	if len(result.LineNumbers) != 2 {
 		t.Fatalf("Expected 2 line numbers, got %d", len(result.LineNumbers))
 	}
-	
+
 	if result.LineNumbers[0] != 1 {
 		t.Errorf("Expected line 1 for first match, got %d", result.LineNumbers[0])
 	}
-	
+
 	if result.LineNumbers[1] != 2 {
 		t.Errorf("Expected line 2 for second match, got %d", result.LineNumbers[1])
 	}
@@ -214,10 +214,10 @@ func BenchmarkCalculateLineNumber(b *testing.B) {
 		lines[i] = "This is a test line with some content"
 	}
 	content := []byte(strings.Join(lines, "\n"))
-	
+
 	// Test various offsets
 	offsets := []int{100, 1000, 10000, 50000, 100000}
-	
+
 	b.ResetTimer()
 	for b.Loop() {
 		for _, offset := range offsets {

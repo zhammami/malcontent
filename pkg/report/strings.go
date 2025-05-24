@@ -1,7 +1,6 @@
 package report
 
 import (
-	"fmt"
 	"slices"
 	"sync"
 
@@ -132,7 +131,7 @@ func (mp *matchProcessor) process() *MatchResult {
 			} else {
 				*result = append(*result, mp.pool.Intern(string(matchBytes)))
 			}
-			
+
 			if mp.lineInfo {
 				lineNumbers = append(lineNumbers, calculateLineNumber(mp.fc, o))
 			}
@@ -146,7 +145,7 @@ func (mp *matchProcessor) process() *MatchResult {
 				patterns = append(patterns, p.Identifier())
 			}
 			*result = append(*result, slices.Compact(patterns)...)
-			
+
 			if mp.lineInfo {
 				// For pattern matches, we still record the line number
 				lineNumbers = append(lineNumbers, calculateLineNumber(mp.fc, o))
@@ -178,7 +177,7 @@ func calculateLineNumber(content []byte, offset int) int {
 	if offset < 0 || offset > len(content) {
 		return 0
 	}
-	
+
 	lineNumber := 1
 	for i := 0; i < offset && i < len(content); i++ {
 		if content[i] == '\n' {
