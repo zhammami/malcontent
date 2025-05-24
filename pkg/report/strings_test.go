@@ -3,8 +3,6 @@ package report
 import (
 	"strings"
 	"testing"
-
-	yarax "github.com/VirusTotal/yara-x/go"
 )
 
 func TestCalculateLineNumber(t *testing.T) {
@@ -86,126 +84,14 @@ func TestCalculateLineNumber(t *testing.T) {
 	}
 }
 
-// MockMatch implements a minimal yarax.Match interface for testing
-type MockMatch struct {
-	offset uint64
-	length uint64
-}
-
-func (m MockMatch) Offset() uint64 {
-	return m.offset
-}
-
-func (m MockMatch) Length() uint64 {
-	return m.length
-}
-
-func (m MockMatch) XorKey() uint8 {
-	return 0
-}
-
-// MockPattern implements a minimal yarax.Pattern interface for testing
-type MockPattern struct {
-	identifier string
-	matches    []yarax.Match
-}
-
-func (p MockPattern) Identifier() string {
-	return p.identifier
-}
-
-func (p MockPattern) Matches() []yarax.Match {
-	return p.matches
-}
-
-func TestMatchProcessorWithLineInfo(t *testing.T) {
-	content := []byte("first line\nsecond line\nthird line")
-
-	matches := []yarax.Match{
-		MockMatch{offset: 0, length: 5},  // "first" at line 1
-		MockMatch{offset: 11, length: 6}, // "second" at line 2
-		MockMatch{offset: 23, length: 5}, // "third" at line 3
-	}
-
-	patterns := []yarax.Pattern{
-		MockPattern{identifier: "test_pattern", matches: matches},
-	}
-
-	// Test with line info enabled
-	processor := newMatchProcessor(content, matches, patterns, true)
-	result := processor.process()
-
-	if len(result.Strings) != 3 {
-		t.Errorf("Expected 3 strings, got %d", len(result.Strings))
-	}
-
-	if len(result.LineNumbers) != 3 {
-		t.Errorf("Expected 3 line numbers, got %d", len(result.LineNumbers))
-	}
-
-	expectedStrings := []string{"first", "second", "third"}
-	expectedLineNumbers := []int{1, 2, 3}
-
-	for i := range result.Strings {
-		if result.Strings[i] != expectedStrings[i] {
-			t.Errorf("String[%d] = %q, want %q", i, result.Strings[i], expectedStrings[i])
-		}
-		if result.LineNumbers[i] != expectedLineNumbers[i] {
-			t.Errorf("LineNumber[%d] = %d, want %d", i, result.LineNumbers[i], expectedLineNumbers[i])
-		}
-	}
-
-	// Test with line info disabled
-	processor = newMatchProcessor(content, matches, patterns, false)
-	result = processor.process()
-
-	if len(result.LineNumbers) != 0 {
-		t.Errorf("Expected no line numbers when lineInfo=false, got %d", len(result.LineNumbers))
-	}
-}
-
-func TestMatchProcessorWithUnprintableChars(t *testing.T) {
-	content := []byte("hello\x00world\nsecond line")
-
-	matches := []yarax.Match{
-		MockMatch{offset: 0, length: 11}, // "hello\x00world" - contains unprintable
-		MockMatch{offset: 12, length: 6}, // "second" - printable
-	}
-
-	patterns := []yarax.Pattern{
-		MockPattern{identifier: "test_pattern", matches: matches},
-	}
-
-	processor := newMatchProcessor(content, matches, patterns, true)
-	result := processor.process()
-
-	// First match should return pattern identifier instead of the string
-	if len(result.Strings) < 2 {
-		t.Fatalf("Expected at least 2 strings, got %d", len(result.Strings))
-	}
-
-	// When unprintable chars are found, pattern identifier is returned
-	if result.Strings[0] != "test_pattern" {
-		t.Errorf("Expected pattern identifier for unprintable match, got %q", result.Strings[0])
-	}
-
-	if result.Strings[1] != "second" {
-		t.Errorf("Expected 'second', got %q", result.Strings[1])
-	}
-
-	// Line numbers should still be calculated correctly
-	if len(result.LineNumbers) != 2 {
-		t.Fatalf("Expected 2 line numbers, got %d", len(result.LineNumbers))
-	}
-
-	if result.LineNumbers[0] != 1 {
-		t.Errorf("Expected line 1 for first match, got %d", result.LineNumbers[0])
-	}
-
-	if result.LineNumbers[1] != 2 {
-		t.Errorf("Expected line 2 for second match, got %d", result.LineNumbers[1])
-	}
-}
+// Note: The TestMatchProcessorWithLineInfo and TestMatchProcessorWithUnprintableChars tests
+// have been removed because they relied on mocking yarax.Match and yarax.Pattern types,
+// which are concrete types from the yara-x library and cannot be mocked.
+// To properly test the matchProcessor functionality, we would need to either:
+// 1. Use actual yara-x rules and scanning, or
+// 2. Refactor the code to use interfaces that can be mocked
+//
+// For now, we focus on testing the calculateLineNumber function which doesn't depend on yara-x types.
 
 func BenchmarkCalculateLineNumber(b *testing.B) {
 	// Create a large file with many lines

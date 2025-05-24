@@ -58,7 +58,7 @@ openssl enc -aes-256-cbc
 
 	// Check that we got results
 	var fileReport *malcontent.FileReport
-	frs.Range(func(key, value any) bool {
+	frs.Files.Range(func(key, value any) bool {
 		if fr, ok := value.(*malcontent.FileReport); ok {
 			fileReport = fr
 			return false
@@ -77,16 +77,14 @@ openssl enc -aes-256-cbc
 
 	// Check that line numbers are present for behaviors with matches
 	var foundLineNumbers bool
-	for _, behaviors := range fileReport.Behaviors {
-		for _, behavior := range behaviors {
-			if len(behavior.MatchStrings) > 0 && len(behavior.LineNumbers) > 0 {
-				foundLineNumbers = true
+	for _, behavior := range fileReport.Behaviors {
+		if len(behavior.MatchStrings) > 0 && len(behavior.LineNumbers) > 0 {
+			foundLineNumbers = true
 
-				// Verify line numbers are reasonable (between 1 and total lines)
-				for _, lineNum := range behavior.LineNumbers {
-					if lineNum < 1 || lineNum > 7 { // We have 7 lines in our test file
-						t.Errorf("Invalid line number %d", lineNum)
-					}
+			// Verify line numbers are reasonable (between 1 and total lines)
+			for _, lineNum := range behavior.LineNumbers {
+				if lineNum < 1 || lineNum > 7 { // We have 7 lines in our test file
+					t.Errorf("Invalid line number %d", lineNum)
 				}
 			}
 		}
@@ -114,13 +112,11 @@ openssl enc -aes-256-cbc
 	}
 
 	// Check that line numbers are NOT present when disabled
-	frs2.Range(func(key, value any) bool {
+	frs2.Files.Range(func(key, value any) bool {
 		if fr, ok := value.(*malcontent.FileReport); ok {
-			for _, behaviors := range fr.Behaviors {
-				for _, behavior := range behaviors {
-					if len(behavior.LineNumbers) > 0 {
-						t.Error("Line numbers found when line info is disabled")
-					}
+			for _, behavior := range fr.Behaviors {
+				if len(behavior.LineNumbers) > 0 {
+					t.Error("Line numbers found when line info is disabled")
 				}
 			}
 		}
@@ -175,7 +171,7 @@ func TestScanBinaryWithLineInfo(t *testing.T) {
 
 	// Verify scan completed without errors
 	found := false
-	frs.Range(func(key, value any) bool {
+	frs.Files.Range(func(key, value any) bool {
 		found = true
 		return false
 	})
