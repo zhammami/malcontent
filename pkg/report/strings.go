@@ -172,7 +172,7 @@ func containsUnprintable(b []byte) bool {
 	return false
 }
 
-// calculateLineNumber calculates the line number for a given byte offset
+// calculateLineNumber calculates the line number for a given byte offset.
 func calculateLineNumber(content []byte, offset int) int {
 	if offset < 0 || offset > len(content) {
 		return 0
