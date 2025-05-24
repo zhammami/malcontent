@@ -67,6 +67,7 @@ var (
 	profileFlag               bool
 	quantityIncreasesRiskFlag bool
 	statsFlag                 bool
+	lineInfoFlag              bool
 	thirdPartyFlag            bool
 	verboseFlag               bool
 )
@@ -275,6 +276,7 @@ func main() {
 				Rules:                 yrs,
 				ScanPaths:             scanPaths,
 				Stats:                 statsFlag,
+				LineInfo:              lineInfoFlag,
 			}
 
 			return nil
@@ -380,6 +382,12 @@ func main() {
 				Value:       false,
 				Usage:       "Show scan statistics",
 				Destination: &statsFlag,
+			},
+			&cli.BoolFlag{
+				Name:        "line-info",
+				Value:       false,
+				Usage:       "Include starting line number of YARA matches",
+				Destination: &lineInfoFlag,
 			},
 			&cli.BoolFlag{
 				Name:        "third-party",

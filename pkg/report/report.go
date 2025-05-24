@@ -317,6 +317,38 @@ func matchStrings(ruleName string, ms []string) []string {
 	return longestUnique(raw)
 }
 
+func matchStringsWithLines(ruleName string, ms []string, lines []int) ([]string, []int) {
+	if len(ms) == 0 {
+		return nil, nil
+	}
+
+	safe := make([]string, len(ms))
+	copy(safe, ms)
+	safeLines := make([]int, len(lines))
+	copy(safeLines, lines)
+
+	raw := make([]string, 0, len(safe))
+	lineMap := make(map[string]int, len(safe))
+
+	for i, m := range safe {
+		str := matchToString(ruleName, m)
+		if str != "" {
+			raw = append(raw, str)
+			if l, ok := lineMap[str]; !ok || safeLines[i] < l {
+				lineMap[str] = safeLines[i]
+			}
+		}
+	}
+
+	unique := longestUnique(raw)
+	outLines := make([]int, len(unique))
+	for i, s := range unique {
+		outLines[i] = lineMap[s]
+	}
+
+	return unique, outLines
+}
+
 // sizeAndChecksum calculates size and checksum using already-read file contents if available.
 func sizeAndChecksum(fc []byte) (int64, string) {
 	var checksum string
@@ -478,12 +510,20 @@ func Generate(ctx context.Context, path string, mrs *yarax.ScanResults, c malcon
 			}
 
 			processor := newMatchProcessor(fc, matches, m.Patterns())
-			matchedStrings = processor.process()
+			var matchedLines []int
+			matchedStrings, matchedLines = processor.process(c.LineInfo)
+		}
+
+		var matchLines []int
+		matchStringsProcessed := matchStrings(m.Identifier(), matchedStrings)
+		if c.LineInfo {
+			matchStringsProcessed, matchLines = matchStringsWithLines(m.Identifier(), matchedStrings, matchedLines)
 		}
 
 		b := &malcontent.Behavior{
 			ID:           key,
-			MatchStrings: matchStrings(m.Identifier(), matchedStrings),
+			MatchStrings: matchStringsProcessed,
+			MatchLines:   matchLines,
 			RiskLevel:    RiskLevels[risk],
 			RiskScore:    risk,
 			RuleName:     m.Identifier(),

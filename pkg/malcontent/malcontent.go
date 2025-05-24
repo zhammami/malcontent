@@ -42,15 +42,19 @@ type Config struct {
 	Scan                  bool
 	ScanPaths             []string
 	Stats                 bool
-	TrimPrefixes          []string
+	// LineInfo enables returning line numbers for matches
+	LineInfo     bool
+	TrimPrefixes []string
 }
 
 type Behavior struct {
 	Description string `json:",omitempty" yaml:",omitempty"`
 	// MatchStrings are all strings found relating to this behavior
 	MatchStrings []string `json:",omitempty" yaml:",omitempty"`
-	RiskScore    int
-	RiskLevel    string `json:",omitempty" yaml:",omitempty"`
+	// MatchLines are the starting lines for each matched string
+	MatchLines []int `json:",omitempty" yaml:",omitempty"`
+	RiskScore  int
+	RiskLevel  string `json:",omitempty" yaml:",omitempty"`
 
 	RuleURL      string `json:",omitempty" yaml:",omitempty"`
 	ReferenceURL string `json:",omitempty" yaml:",omitempty"`

@@ -70,17 +70,25 @@ var matchResultPool = sync.Pool{
 	},
 }
 
+var lineResultPool = sync.Pool{
+	New: func() any {
+		s := make([]int, 0, 32)
+		return &s
+	},
+}
+
 // process performantly handles the conversion of matched data to strings.
 // yara-x does not expose the rendered string via the API due to performance overhead.
-func (mp *matchProcessor) process() []string {
+func (mp *matchProcessor) process(lineInfo bool) ([]string, []int) {
 	if len(mp.matches) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	mp.mu.Lock()
 	defer mp.mu.Unlock()
 
 	var result *[]string
+	var lineResult *[]int
 	var ok bool
 	if result, ok = matchResultPool.Get().(*[]string); ok {
 		*result = (*result)[:0]
@@ -89,6 +97,17 @@ func (mp *matchProcessor) process() []string {
 		result = &slice
 	}
 	defer matchResultPool.Put(result)
+
+	if lineInfo {
+		if lr, ok := lineResultPool.Get().(*[]int); ok {
+			*lr = (*lr)[:0]
+			lineResult = lr
+		} else {
+			slice := make([]int, 0, 32)
+			lineResult = &slice
+		}
+		defer lineResultPool.Put(lineResult)
+	}
 
 	initializeOnce.Do(func() {
 		matchPool = pool.NewBufferPool(len(mp.matches))
@@ -110,6 +129,10 @@ func (mp *matchProcessor) process() []string {
 		}
 
 		matchBytes := mp.fc[o : o+l]
+		if lineInfo {
+			line := 1 + bytes.Count(mp.fc[:o], []byte{'\n'})
+			*lineResult = append(*lineResult, line)
+		}
 
 		if !containsUnprintable(matchBytes) {
 			if l <= cap(buffer) {
@@ -134,8 +157,13 @@ func (mp *matchProcessor) process() []string {
 
 	finalResult := make([]string, len(*result))
 	copy(finalResult, *result)
+	var finalLines []int
+	if lineInfo {
+		finalLines = make([]int, len(*lineResult))
+		copy(finalLines, *lineResult)
+	}
 
-	return finalResult
+	return finalResult, finalLines
 }
 
 // containsUnprintable determines if a byte is a valid character.
