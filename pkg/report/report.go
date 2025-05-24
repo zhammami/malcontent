@@ -466,6 +466,7 @@ func Generate(ctx context.Context, path string, mrs *yarax.ScanResults, c malcon
 		ruleURL := generateRuleURL(m.Namespace(), m.Identifier())
 
 		var matchedStrings []string
+		var matchResult *MatchResult
 		{
 			totalMatches := 0
 			for _, p := range m.Patterns() {
@@ -477,13 +478,15 @@ func Generate(ctx context.Context, path string, mrs *yarax.ScanResults, c malcon
 				matches = append(matches, p.Matches()...)
 			}
 
-			processor := newMatchProcessor(fc, matches, m.Patterns())
-			matchedStrings = processor.process()
+			processor := newMatchProcessor(fc, matches, m.Patterns(), c.LineInfo)
+			matchResult = processor.process()
+			matchedStrings = matchResult.Strings
 		}
 
 		b := &malcontent.Behavior{
 			ID:           key,
 			MatchStrings: matchStrings(m.Identifier(), matchedStrings),
+			LineNumbers:  matchResult.LineNumbers,
 			RiskLevel:    RiskLevels[risk],
 			RiskScore:    risk,
 			RuleName:     m.Identifier(),

@@ -30,6 +30,7 @@ type Config struct {
 	IgnoreSelf            bool
 	IgnoreTags            []string
 	IncludeDataFiles      bool
+	LineInfo              bool
 	MinFileRisk           int
 	MinRisk               int
 	OCI                   bool
@@ -49,6 +50,8 @@ type Behavior struct {
 	Description string `json:",omitempty" yaml:",omitempty"`
 	// MatchStrings are all strings found relating to this behavior
 	MatchStrings []string `json:",omitempty" yaml:",omitempty"`
+	// LineNumbers are the starting line numbers where matches occur (when --line-info is used)
+	LineNumbers []int `json:",omitempty" yaml:",omitempty"`
 	RiskScore    int
 	RiskLevel    string `json:",omitempty" yaml:",omitempty"`
 
