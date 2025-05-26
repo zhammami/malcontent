@@ -52,6 +52,8 @@ type Behavior struct {
 	MatchStrings []string `json:",omitempty" yaml:",omitempty"`
 	// LineNumbers are the starting line numbers where matches occur (when --line-info is used)
 	LineNumbers []int `json:",omitempty" yaml:",omitempty"`
+	// CharOffsets are the character offsets within each line where matches occur (when --line-info is used)
+	CharOffsets []int `json:",omitempty" yaml:",omitempty"`
 	RiskScore   int
 	RiskLevel   string `json:",omitempty" yaml:",omitempty"`
 

@@ -49,6 +49,7 @@ func (sp *StringPool) Intern(s string) string {
 type MatchResult struct {
 	Strings     []string
 	LineNumbers []int
+	CharOffsets []int
 }
 
 type matchProcessor struct {
@@ -89,6 +90,7 @@ func (mp *matchProcessor) process() *MatchResult {
 
 	var result *[]string
 	var lineNumbers []int
+	var charOffsets []int
 	var ok bool
 	if result, ok = matchResultPool.Get().(*[]string); ok {
 		*result = (*result)[:0]
@@ -100,6 +102,7 @@ func (mp *matchProcessor) process() *MatchResult {
 
 	if mp.lineInfo {
 		lineNumbers = make([]int, 0, len(mp.matches))
+		charOffsets = make([]int, 0, len(mp.matches))
 	}
 
 	initializeOnce.Do(func() {
@@ -134,6 +137,7 @@ func (mp *matchProcessor) process() *MatchResult {
 
 			if mp.lineInfo {
 				lineNumbers = append(lineNumbers, calculateLineNumber(mp.fc, o))
+				charOffsets = append(charOffsets, calculateCharOffset(mp.fc, o))
 			}
 		} else {
 			if patterns == nil || cap(patterns) < patternsCap {
@@ -147,8 +151,9 @@ func (mp *matchProcessor) process() *MatchResult {
 			*result = append(*result, slices.Compact(patterns)...)
 
 			if mp.lineInfo {
-				// For pattern matches, we still record the line number
+				// For pattern matches, we still record the line number and char offset
 				lineNumbers = append(lineNumbers, calculateLineNumber(mp.fc, o))
+				charOffsets = append(charOffsets, calculateCharOffset(mp.fc, o))
 			}
 		}
 	}
@@ -159,6 +164,7 @@ func (mp *matchProcessor) process() *MatchResult {
 	return &MatchResult{
 		Strings:     finalResult,
 		LineNumbers: lineNumbers,
+		CharOffsets: charOffsets,
 	}
 }
 
@@ -185,4 +191,23 @@ func calculateLineNumber(content []byte, offset int) int {
 		}
 	}
 	return lineNumber
+}
+
+// calculateCharOffset calculates the character offset within a line for a given byte offset.
+func calculateCharOffset(content []byte, offset int) int {
+	if offset < 0 || offset > len(content) {
+		return 0
+	}
+
+	// Find the last newline before the offset
+	lastNewline := -1
+	for i := 0; i < offset && i < len(content); i++ {
+		if content[i] == '\n' {
+			lastNewline = i
+		}
+	}
+
+	// Character offset is the distance from the last newline
+	// If no newline found, it's from the beginning of the file
+	return offset - lastNewline - 1
 }

@@ -53,12 +53,12 @@ func (r JSON) Full(ctx context.Context, c *malcontent.Config, rep *malcontent.Re
 					// Filter out diff-related fields
 					r.ArchiveRoot = ""
 					r.FullPath = ""
-					
+
 					// If line info is enabled, split behaviors with multiple line numbers
 					if c != nil && c.LineInfo {
 						r = splitBehaviorsByLineNumbers(r)
 					}
-					
+
 					jr.Files[path] = r
 				}
 			}
@@ -83,29 +83,29 @@ func (r JSON) Full(ctx context.Context, c *malcontent.Config, rep *malcontent.Re
 func splitBehaviorsByLineNumbers(fr *malcontent.FileReport) *malcontent.FileReport {
 	// Create a copy of the FileReport to avoid modifying the original
 	newFR := &malcontent.FileReport{
-		Path:              fr.Path,
-		SHA256:            fr.SHA256,
-		Size:              fr.Size,
-		Skipped:           fr.Skipped,
-		Meta:              fr.Meta,
-		Syscalls:          fr.Syscalls,
-		Pledge:            fr.Pledge,
-		Capabilities:      fr.Capabilities,
-		FilteredBehaviors: fr.FilteredBehaviors,
-		PreviousPath:      fr.PreviousPath,
-		PreviousRelPath:   fr.PreviousRelPath,
+		Path:                 fr.Path,
+		SHA256:               fr.SHA256,
+		Size:                 fr.Size,
+		Skipped:              fr.Skipped,
+		Meta:                 fr.Meta,
+		Syscalls:             fr.Syscalls,
+		Pledge:               fr.Pledge,
+		Capabilities:         fr.Capabilities,
+		FilteredBehaviors:    fr.FilteredBehaviors,
+		PreviousPath:         fr.PreviousPath,
+		PreviousRelPath:      fr.PreviousRelPath,
 		PreviousRelPathScore: fr.PreviousRelPathScore,
-		PreviousRiskScore: fr.PreviousRiskScore,
-		PreviousRiskLevel: fr.PreviousRiskLevel,
-		RiskScore:         fr.RiskScore,
-		RiskLevel:         fr.RiskLevel,
-		IsMalcontent:      fr.IsMalcontent,
-		Overrides:         fr.Overrides,
-		ArchiveRoot:       fr.ArchiveRoot,
-		FullPath:          fr.FullPath,
-		Behaviors:         make([]*malcontent.Behavior, 0),
+		PreviousRiskScore:    fr.PreviousRiskScore,
+		PreviousRiskLevel:    fr.PreviousRiskLevel,
+		RiskScore:            fr.RiskScore,
+		RiskLevel:            fr.RiskLevel,
+		IsMalcontent:         fr.IsMalcontent,
+		Overrides:            fr.Overrides,
+		ArchiveRoot:          fr.ArchiveRoot,
+		FullPath:             fr.FullPath,
+		Behaviors:            make([]*malcontent.Behavior, 0),
 	}
-	
+
 	// Process each behavior
 	for _, b := range fr.Behaviors {
 		if len(b.LineNumbers) <= 1 {
@@ -113,11 +113,16 @@ func splitBehaviorsByLineNumbers(fr *malcontent.FileReport) *malcontent.FileRepo
 			newFR.Behaviors = append(newFR.Behaviors, b)
 		} else {
 			// Split into multiple behaviors, one per line number
-			for _, lineNum := range b.LineNumbers {
+			for i, lineNum := range b.LineNumbers {
+				charOffset := 0
+				if i < len(b.CharOffsets) {
+					charOffset = b.CharOffsets[i]
+				}
 				newBehavior := &malcontent.Behavior{
 					Description:    b.Description,
 					MatchStrings:   b.MatchStrings,
 					LineNumbers:    []int{lineNum},
+					CharOffsets:    []int{charOffset},
 					RiskScore:      b.RiskScore,
 					RiskLevel:      b.RiskLevel,
 					RuleURL:        b.RuleURL,
@@ -136,6 +141,6 @@ func splitBehaviorsByLineNumbers(fr *malcontent.FileReport) *malcontent.FileRepo
 			}
 		}
 	}
-	
+
 	return newFR
 }

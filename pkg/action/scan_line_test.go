@@ -246,7 +246,7 @@ openssl dgst -sha256 file.txt
 		// Count behaviors by ID
 		behaviorCounts := make(map[string]int)
 		lineNumbersByID := make(map[string][]int)
-		
+
 		for _, behavior := range fileReport.Behaviors {
 			behaviorCounts[behavior.ID]++
 			if len(behavior.LineNumbers) > 0 {
@@ -260,11 +260,11 @@ openssl dgst -sha256 file.txt
 				// Each behavior should have exactly one line number
 				for _, behavior := range fileReport.Behaviors {
 					if behavior.ID == id && len(behavior.LineNumbers) > 1 {
-						t.Errorf("Behavior %s has multiple line numbers in JSON output: %v", 
+						t.Errorf("Behavior %s has multiple line numbers in JSON output: %v",
 							id, behavior.LineNumbers)
 					}
 				}
-				
+
 				// Verify line numbers are unique
 				seen := make(map[int]bool)
 				for _, line := range lines {
@@ -280,7 +280,7 @@ openssl dgst -sha256 file.txt
 	// Test with line info disabled - behaviors should not be split
 	jsonBuf.Reset()
 	config.LineInfo = false
-	
+
 	report2, err := Scan(ctx, config)
 	if err != nil {
 		t.Fatalf("Scan without line info failed: %v", err)
@@ -301,7 +301,7 @@ openssl dgst -sha256 file.txt
 		for _, behavior := range fileReport.Behaviors {
 			behaviorIDs[behavior.ID]++
 		}
-		
+
 		// Each unique behavior ID should appear only once
 		for id, count := range behaviorIDs {
 			if count > 1 {

@@ -11,11 +11,11 @@ import (
 
 func TestJSONLineNumberSplitting(t *testing.T) {
 	tests := []struct {
-		name           string
-		lineInfo       bool
-		behaviors      []*malcontent.Behavior
-		expectedCount  int
-		expectedLines  [][]int
+		name          string
+		lineInfo      bool
+		behaviors     []*malcontent.Behavior
+		expectedCount int
+		expectedLines [][]int
 	}{
 		{
 			name:     "Line info disabled - no splitting",
@@ -132,7 +132,7 @@ func TestJSONLineNumberSplitting(t *testing.T) {
 			// Render to JSON
 			var buf bytes.Buffer
 			renderer := NewJSON(&buf)
-			
+
 			ctx := context.Background()
 			if err := renderer.Full(ctx, config, report); err != nil {
 				t.Fatalf("Failed to render JSON: %v", err)
@@ -159,7 +159,7 @@ func TestJSONLineNumberSplitting(t *testing.T) {
 			for i, behavior := range fileReport.Behaviors {
 				if i < len(tt.expectedLines) {
 					if !equalIntSlices(behavior.LineNumbers, tt.expectedLines[i]) {
-						t.Errorf("Behavior %d: expected line numbers %v, got %v", 
+						t.Errorf("Behavior %d: expected line numbers %v, got %v",
 							i, tt.expectedLines[i], behavior.LineNumbers)
 					}
 				}
@@ -174,15 +174,15 @@ func TestJSONLineNumberSplitting(t *testing.T) {
 						continue
 					}
 					if behavior.Description != firstOriginal.Description {
-						t.Errorf("Description mismatch: expected %q, got %q", 
+						t.Errorf("Description mismatch: expected %q, got %q",
 							firstOriginal.Description, behavior.Description)
 					}
 					if behavior.RiskScore != firstOriginal.RiskScore {
-						t.Errorf("RiskScore mismatch: expected %d, got %d", 
+						t.Errorf("RiskScore mismatch: expected %d, got %d",
 							firstOriginal.RiskScore, behavior.RiskScore)
 					}
 					if behavior.RiskLevel != firstOriginal.RiskLevel {
-						t.Errorf("RiskLevel mismatch: expected %q, got %q", 
+						t.Errorf("RiskLevel mismatch: expected %q, got %q",
 							firstOriginal.RiskLevel, behavior.RiskLevel)
 					}
 				}
