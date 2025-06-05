@@ -26,6 +26,9 @@ malcontent discovers supply-chain compromises through the magic of context, diff
                risk          increase      risk
 
 ```
+ZAID NOTE: this version has a --line-info capability that will:
+ - in the JSON output produce a LineNo & character offset value for all the findings (1 finding per instance per file).
+ - note this is only activated when --format json is used.
 
 malcontent has 3 modes of operation:
 
